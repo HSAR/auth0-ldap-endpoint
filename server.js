@@ -20,8 +20,6 @@ logger.info('Starting LDAP endpoint for Auth...');
 const server = ldap.createServer({
   'certificate': fs.readFileSync(nconf.get('LDAPS_CERTIFICATE')),
   'key': fs.readFileSync(nconf.get('LDAPS_KEY'))
-  //   'certificate': '/Users/ShuSam/gs_9960-combined.pem',
-  //   'key':  '/Users/ShuSam/gs_9960-combined.pem'
 });
 server.bind('', authenticate(
   nconf.get('AUTH0_DOMAIN'),
