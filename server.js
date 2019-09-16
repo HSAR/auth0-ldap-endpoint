@@ -1,6 +1,7 @@
 import path from 'path';
 import ldap from 'ldapjs';
 import nconf from 'nconf';
+import fs from 'fs';
 
 import logger from './lib/logger';
 import { authenticate, search } from './lib/routes';
@@ -16,14 +17,23 @@ nconf
 
 logger.info('Starting LDAP endpoint for Auth...');
 
-const server = ldap.createServer();
-server.bind('', authenticate(nconf.get('AUTH0_DOMAIN'), nconf.get('AUTH0_CLIENT_ID')));
-server.search('', requireAdministrator, search(
+const server = ldap.createServer({
+  'certificate': fs.readFileSync(nconf.get('LDAPS_CERTIFICATE')),
+  'key': fs.readFileSync(nconf.get('LDAPS_KEY'))
+  //   'certificate': '/Users/ShuSam/gs_9960-combined.pem',
+  //   'key':  '/Users/ShuSam/gs_9960-combined.pem'
+});
+server.bind('', authenticate(
   nconf.get('AUTH0_DOMAIN'),
   nconf.get('AUTH0_CLIENT_ID'),
   nconf.get('AUTH0_CLIENT_SECRET')
 ));
 
+server.search('', requireAdministrator, search(
+    nconf.get('AUTH0_DOMAIN'),
+    nconf.get('AUTH0_CLIENT_ID'),
+    nconf.get('AUTH0_CLIENT_SECRET')
+));
 server.listen(nconf.get('LDAP_PORT'), () => {
   logger.info(`LDAP server listening on: ${server.url}`);
 });
